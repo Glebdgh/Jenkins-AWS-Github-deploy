@@ -1,4 +1,5 @@
 from pyowm import OWM
+from colorama import Fore, Back, Style
 from pyowm.utils import config
 from pyowm.utils import timestamps
 from pyowm.owm import OWM
@@ -15,26 +16,31 @@ bot = telebot.TeleBot("1661746602:AAHVuG46hW7zqevDbw22ld9MRgt3AyPNZI0")
 @bot.message_handler(content_types=['text'])
 def send_echo(message):
   try:
-    observation = owm.weather_at_place( message.text )
-    w = observation.get_weather()
-    temp = w.get_temperature('celsius')["temp"]
-    hum = w.get_humidity()
-    time = w.get_reference_time(timeformat='iso')
-    wind = w.get_wind()["speed"]
+    observation = mgr.weather_at_place(message.text)
+    w = observation.weather
+    temp = w.temperature('celsius')["temp"]
+    hum = w.humidity
+    speed = w.wind()["speed"]
 
-    answer ="В городе " + message.text + " сейчас " + w.get_detailed_status() + "\n"
-    answer += "Температура сейчас в районе " + str(temp) + "\n\n" + "\nСкорость ветра: " + str(wind) + "м/с" + "\n" + "\nВлажность: " + str(hum) + "%" + "\n" + "\nВремя: " + str(time) + "\n"
-
-    if temp < 11:
-      answer += "Сейчас очень холодно."
-    elif temp < 20:
-      answer += "Сейчас прохладно, лучше одеться потеплее."
+    answer = "В стране/городе "+ message.text + " сейчас " + w.detailed_status + "!" + "\n"
+    if w.detailed_status == "пасмурно":
+      answer += ("Ну,ты это,не сердчай!" + " 😉") + "\n"
     else:
-      answer += "Температура в норме!"
+      answer += ("")
+    answer += "Температура здесь " + str(temp) + " C." "\n\n"
+    answer += "Влажность здесь " + str(hum) + "%." + "\n\n"
+    answer += "Скорость ветра " + str(speed) + " м/с." + "\n\n"
 
-    bot.send_message(message.chat.id, answer)
+
+    if temp < 10:
+      answer += "Жесть холодрыга на улице 🥶 ,так шо одевайся!"
+    elif temp < 20:
+      answer += "Потеплее конечно,но ты одевайся там!🙃"
+    else:
+      answer += "Можешь идти загорать,погода персик 😻"
+ 
+    bot.send_message(message.chat.id,answer)
   except:
-    bot.send_message(message.chat.id,'Ошибка! Город не найден.')
-bot.polling( none_stop = True)
-input()
-	
+    bot.send_message(message.chat.id,"Город не найден.\nПожалуйста введите правильное название города!")
+
+bot.polling (none_stop = True)
